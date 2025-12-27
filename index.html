@@ -1,142 +1,127 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Wasserkraftwerke Karte</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Wasserkraftwerke Karte</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-sA+4/6ZOGP6Pgn7ab0H0Uo+gRzPgh2YtGEn9Mxo3k1w="
-    crossorigin=""
-  />
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 
-  <!-- MarkerCluster CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"
-  />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"
-  />
+<!-- MarkerCluster CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-
-    body {
-      display: flex;
-      font-family: Arial, sans-serif;
-      height: 100%;
-    }
-
-    #map {
-      flex: 1;
-      min-height: 100vh; /* wichtig für iPad/Safari */
-    }
-
-    #sidebar {
-      width: 300px;
-      overflow-y: auto;
-      background: #f4f4f4;
-      padding: 10px;
-    }
-
-    #sidebar h2 {
-      margin-top: 0;
-    }
-
-    .entry {
-      margin-bottom: 8px;
-      padding: 4px;
-      border-bottom: 1px solid #ccc;
-      cursor: pointer;
-    }
-
-    .entry:hover {
-      background-color: #ddd;
-    }
-  </style>
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+body {
+  display: flex;
+  font-family: Arial, sans-serif;
+  height: 100%;
+}
+#map {
+  flex: 1;
+  min-height: 100vh; /* für iPad/Safari */
+}
+#sidebar {
+  width: 300px;
+  overflow-y: auto;
+  background: #f4f4f4;
+  padding: 10px;
+}
+#sidebar h2 {
+  margin-top: 0;
+}
+.entry {
+  margin-bottom: 8px;
+  padding: 4px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+.entry:hover {
+  background-color: #ddd;
+}
+</style>
 </head>
 <body>
-  <div id="sidebar">
-    <h2>Anlagen ohne Koordinaten</h2>
-    <div id="no-coords"></div>
-  </div>
-  <div id="map"></div>
 
-  <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-o9N1j7r87mJf3nZSU+6aAlqfENZ1hw5Yf5GIbMt0xGc="
-    crossorigin=""
-  ></script>
+<div id="sidebar">
+  <h2>Anlagen ohne Koordinaten</h2>
+  <div id="no-coords"></div>
+</div>
+<div id="map"></div>
 
-  <!-- MarkerCluster JS -->
-  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<!-- MarkerCluster JS -->
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
-  <script>
-    // Karte erstellen
-    const map = L.map("map").setView([51.0, 10.0], 6);
+<script>
+  // Karte erstellen
+  const map = L.map("map").setView([51.0, 10.0], 6);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap"
-    }).addTo(map);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
 
-    const cluster = L.markerClusterGroup();
-    const noCoordsContainer = document.getElementById("no-coords");
+  const cluster = L.markerClusterGroup();
+  const noCoordsContainer = document.getElementById("no-coords");
 
-    // Hilfsfunktion für Einträge ohne Koordinaten
-    function addNoCoords(anlage) {
-      const div = document.createElement("div");
-      div.className = "entry";
-      div.textContent = `${anlage[1] || "Unbekannte Anlage"} – ${anlage[11] || ""}`;
-      noCoordsContainer.appendChild(div);
-    }
+  // Hilfsfunktion: Eintrag ohne Koordinaten
+  function addNoCoords(anlage) {
+    const div = document.createElement("div");
+    div.className = "entry";
+    div.textContent = `${anlage[1] || "Unbekannte Anlage"} – ${anlage[11] || ""}`;
+    noCoordsContainer.appendChild(div);
+  }
 
-    // JSON laden
-    fetch("Stromerzeuger.json")
-      .then(r => r.json())
-      .then(data => {
-        data.forEach(anlage => {
-          let lat = anlage[19];
-          let lon = anlage[20];
+  // JSON laden
+  fetch("Stromerzeuger.json")
+    .then(response => response.json())
+    .then(data => {
+      if (!Array.isArray(data)) {
+        console.error("JSON ist kein Array");
+        return;
+      }
 
-          if (lat && lon) {
-            lat = lat.toString().replace(",", ".").trim();
-            lon = lon.toString().replace(",", ".").trim();
+      data.forEach(anlage => {
+        let lat = anlage[19];
+        let lon = anlage[20];
 
-            const latNum = parseFloat(lat);
-            const lonNum = parseFloat(lon);
+        if (lat && lon) {
+          lat = lat.toString().replace(",", ".").trim();
+          lon = lon.toString().replace(",", ".").trim();
 
-            if (!isNaN(latNum) && !isNaN(lonNum)) {
-              const marker = L.marker([latNum, lonNum]);
-              const name = anlage[1] || "Unbekannte Anlage";
-              const ort = anlage[11] || "";
-              marker.bindPopup(`<b>${name}</b><br>${ort}`);
-              cluster.addLayer(marker);
-            } else {
-              addNoCoords(anlage);
-            }
+          const latNum = parseFloat(lat);
+          const lonNum = parseFloat(lon);
+
+          if (!isNaN(latNum) && !isNaN(lonNum)) {
+            const marker = L.marker([latNum, lonNum]);
+            const name = anlage[1] || "Unbekannte Anlage";
+            const ort = anlage[11] || "";
+            marker.bindPopup(`<b>${name}</b><br>${ort}`);
+            cluster.addLayer(marker);
           } else {
             addNoCoords(anlage);
           }
-        });
-
-        map.addLayer(cluster);
-      })
-      .catch(err => {
-        console.error("Fehler beim Laden der JSON:", err);
-        const div = document.createElement("div");
-        div.textContent = "Fehler beim Laden der Daten!";
-        noCoordsContainer.appendChild(div);
+        } else {
+          addNoCoords(anlage);
+        }
       });
-  </script>
+
+      map.addLayer(cluster);
+    })
+    .catch(err => {
+      console.error("Fehler beim Laden der JSON:", err);
+      const div = document.createElement("div");
+      div.textContent = "Fehler beim Laden der Daten!";
+      noCoordsContainer.appendChild(div);
+    });
+</script>
+
 </body>
 </html>
