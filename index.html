@@ -23,16 +23,29 @@ body {
   font-family: Arial, sans-serif;
   height: 100%;
 }
-#map {
-  flex: 1;
-  min-height: 100vh; /* für iPad/Safari */
+
+/* Quellenangabe oben am Rand */
+#quelle {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  font-size: 0.8em;
+  color: #555;
+  background: #f4f4f4;
+  padding: 2px 10px;
+  z-index: 1000;
+  box-sizing: border-box;
 }
+
+/* Sidebar */
 #sidebar {
   width: 300px;
   overflow-y: auto;
   background: #f4f4f4;
   padding: 10px;
   box-sizing: border-box;
+  margin-top: 20px; /* Platz für Quellenangabe */
 }
 #sidebar h2 {
   margin-top: 0;
@@ -46,19 +59,21 @@ body {
 .entry:hover {
   background-color: #ddd;
 }
-#quelle {
-  margin-top: 10px;
-  font-size: 0.9em;
-  color: #555;
+
+/* Karte */
+#map {
+  flex: 1;
+  min-height: 100vh; /* für iPad/Safari */
 }
 </style>
 </head>
 <body>
 
+<div id="quelle">Quelle: Marktstammdatenregister, BNetzA</div>
+
 <div id="sidebar">
   <h2>Anlagen ohne Koordinaten</h2>
   <div id="no-coords"></div>
-  <div id="quelle">Quelle: Marktstammdatenregister, BNetzA</div>
 </div>
 
 <div id="map"></div>
@@ -79,7 +94,7 @@ body {
   const cluster = L.markerClusterGroup();
   const noCoordsContainer = document.getElementById("no-coords");
 
-  // Hilfsfunktion: Eintrag ohne Koordinaten
+  // Einträge ohne Koordinaten
   function addNoCoords(anlage) {
     const div = document.createElement("div");
     div.className = "entry";
@@ -111,7 +126,7 @@ body {
             const marker = L.marker([latNum, lonNum]);
             const name = anlage[1] || "Unbekannte Anlage";
             const ort = anlage[11] || "";
-            const leistung = anlage[7] || "keine Angabe"; // Installierte Leistung kW
+            const leistung = anlage[6] || "keine Angabe"; // Installierte Leistung kW
             marker.bindPopup(`
               <b>${name}</b><br>
               Ort: ${ort}<br>
