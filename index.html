@@ -126,7 +126,7 @@ body {
             const marker = L.marker([latNum, lonNum]);
             const name = anlage[1] || "Unbekannte Anlage";
             const ort = anlage[11] || "";
-            const leistung = anlage[6] || "keine Angabe"; // Installierte Leistung kW
+            const leistung = anlage[4] || "keine Angabe"; // Installierte Leistung kW
             marker.bindPopup(`
               <b>${name}</b><br>
               Ort: ${ort}<br>
