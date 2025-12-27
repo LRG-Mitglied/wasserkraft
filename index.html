@@ -103,7 +103,12 @@ body {
             const marker = L.marker([latNum, lonNum]);
             const name = anlage[1] || "Unbekannte Anlage";
             const ort = anlage[11] || "";
-            marker.bindPopup(`<b>${name}</b><br>${ort}`);
+            const leistung = anlage[6] || "keine Angabe"; // installierte Leistung kW
+            marker.bindPopup(`
+              <b>${name}</b><br>
+              Ort: ${ort}<br>
+              Installierte Leistung: ${leistung} kW
+            `);
             cluster.addLayer(marker);
           } else {
             addNoCoords(anlage);
