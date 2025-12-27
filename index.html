@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Wasserkraftwerke – Karte</title>
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css">
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css">
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+
+  #container {
+    display: flex;
+    height: 100vh;
+  }
+
+  #sidebar {
+    width: 320px;
+    overflow-y: auto;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    background: #f7f7f7;
+  }
+
+  #map {
+    flex: 1;
+  }
+
+  .entry {
+    margin-bottom: 10px;
+    padding: 8px;
+    background: white;
+    border: 1px solid #ddd;
+  }
+
+  .entry b {
+    display: block;
+  }
+</style>
+</head>
+
+<body>
+<div id="container">
+  <div id="sidebar">
+    <h3>Ohne Koordinaten</h3>
+    <div id="noCoords"></div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+<script>
+  const map = L.map("map").setView([51.0, 10.0], 6);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+
+  const cluster = L.markerClusterGroup();
+  const sidebar = document.getElementById("noCoords");
+
+  fetch("Stromerzeuger.json")
+    .then(res => res.json())
+    .then(data => {
+
+      data.forEach(anlage => {
+
+        const name = anlage[1];
+        const status = anlage[2];
+        const leistung = anlage[4];
+        const plz = anlage[10];
+        const ort = anlage[11];
+
+        let lat = anlage[19];
+        let lon = anlage[20];
+
+        // Komma → Punkt
+        if (lat) lat = lat.replace(",", ".");
+        if (lon) lon = lon.replace(",", ".");
+
+        if (lat && lon) {
+          const marker = L.marker([parseFloat(lat), parseFloat(lon)]);
+
+          marker.bindPopup(`
+            <b>${name}</b><br>
+            Status: ${status}<br>
+            Leistung: ${leistung} kW<br>
+            Ort: ${plz} ${ort}
+          `);
+
+          cluster.addLayer(marker);
+
+        } else {
+          // Eintrag für Seitenleiste
+          const div = document.createElement("div");
+          div.className = "entry";
+          div.innerHTML = `
+            <b>${name}</b>
+            ${status}<br>
+            ${plz || ""} ${ort || ""}
+          `;
+          sidebar.appendChild(div);
+        }
+
+      });
+
+      map.addLayer(cluster);
+    });
+</script>
+</body>
+</html>
