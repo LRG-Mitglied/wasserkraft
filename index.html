@@ -32,6 +32,7 @@ body {
   overflow-y: auto;
   background: #f4f4f4;
   padding: 10px;
+  box-sizing: border-box;
 }
 #sidebar h2 {
   margin-top: 0;
@@ -45,6 +46,11 @@ body {
 .entry:hover {
   background-color: #ddd;
 }
+#quelle {
+  margin-top: 10px;
+  font-size: 0.9em;
+  color: #555;
+}
 </style>
 </head>
 <body>
@@ -52,7 +58,9 @@ body {
 <div id="sidebar">
   <h2>Anlagen ohne Koordinaten</h2>
   <div id="no-coords"></div>
+  <div id="quelle">Quelle: Marktstammdatenregister, BNetzA</div>
 </div>
+
 <div id="map"></div>
 
 <!-- Leaflet JS -->
@@ -103,7 +111,7 @@ body {
             const marker = L.marker([latNum, lonNum]);
             const name = anlage[1] || "Unbekannte Anlage";
             const ort = anlage[11] || "";
-            const leistung = anlage[6] || "keine Angabe"; // installierte Leistung kW
+            const leistung = anlage[7] || "keine Angabe"; // Installierte Leistung kW
             marker.bindPopup(`
               <b>${name}</b><br>
               Ort: ${ort}<br>
